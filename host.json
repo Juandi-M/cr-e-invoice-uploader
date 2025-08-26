@@ -2,8 +2,8 @@
   "version": "2.0",
   "extensions": {
     "queues": {
-      "batchSize": 8,
-      "newBatchThreshold": 4,
+      "batchSize": 1,
+      "newBatchThreshold": 0,
       "visibilityTimeout": "00:05:00",
       "maxDequeueCount": 5
     }
@@ -17,7 +17,7 @@
     "applicationInsights": {
       "samplingSettings": {
         "isEnabled": true,
-        "maxTelemetryItemsPerSecond" : 5
+        "maxTelemetryItemsPerSecond": 5
       }
     }
   }

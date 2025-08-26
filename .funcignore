@@ -3,8 +3,9 @@
 .vscode/
 .idea/
 
-# Archivos locales de config
+# Config local (no subir)
 local.settings.json
+politica.pdf
 
 # Python caches
 __pycache__/
@@ -15,7 +16,7 @@ __pycache__/
 venv/
 .python_packages/
 
-# Pruebas / docs
+# Tests / docs / notas
 test/
 tests/
 README.md
@@ -27,3 +28,10 @@ README.md
 *.log
 *.bak
 *.tmp
+
+# Infra y CI
+terraform/
+.github/
+
+# Mantener XSDs (no ignores)
+!xsd/**

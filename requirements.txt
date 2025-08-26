@@ -1,9 +1,21 @@
+# Azure Functions runtime
 azure-functions
+
+# Azure SDK (storage, queues, tables, key vault)
 azure-storage-blob
+azure-storage-queue
 azure-data-tables
 azure-identity
 azure-keyvault-keys
-lxml
-requests
+azure-keyvault-certificates
+
+# Graph API (delegated auth con refresh token)
 msal
-opencensus-ext-azure
+requests
+
+# XML/XSD processing y firma
+lxml
+cryptography
+
+# Utilidades
+python-dateutil
