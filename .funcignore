@@ -1,0 +1,29 @@
+# Control de versiones / IDE
+.git*
+.vscode/
+.idea/
+
+# Archivos locales de config
+local.settings.json
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno local
+venv/
+.python_packages/
+
+# Pruebas / docs
+test/
+tests/
+README.md
+*.md
+*.docx
+*.pdf
+
+# Archivos temporales
+*.log
+*.bak
+*.tmp

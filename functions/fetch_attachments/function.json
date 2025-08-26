@@ -1,0 +1,18 @@
+{
+  "bindings": [
+    {
+      "type": "queueTrigger",
+      "direction": "in",
+      "name": "msg",
+      "queueName": "%QUEUE_INCOMING%",
+      "connection": "AzureWebJobsStorage"
+    },
+    {
+      "type": "queue",
+      "direction": "out",
+      "name": "validateQueue",
+      "queueName": "%QUEUE_VALIDATE%",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}
