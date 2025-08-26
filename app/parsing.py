@@ -1,10 +1,7 @@
-"""
-Validación/parseo de factura: carga XSD (si hay), valida y extrae metadatos.
-Compatibilidad básica con FE/TE/NC/ND (buscar campos típicos).
-"""
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 from lxml import etree
+from app.xsd import validate_xml, invoice_schema
 from app.config import settings
 
 class InvoiceValidationError(Exception):
@@ -16,66 +13,45 @@ class InvoiceMeta:
     message_id: str
     filename: str
     clave: str
-    consecutivo: str | None
-    ced_emisor: str | None
-    ced_receptor: str | None
-    total: float | None
+    consecutivo: Optional[str]
+    ced_emisor: Optional[str]
+    ced_receptor: Optional[str]
+    total: Optional[float]
 
-def _load_schema(xsd_path: str) -> Optional[etree.XMLSchema]:
-    if not xsd_path:
-        return None
-    with open(xsd_path, "rb") as f:
-        schema_doc = etree.parse(f)
-    return etree.XMLSchema(schema_doc)
-
-def _to_float_or_none(text: str | None) -> float | None:
-    if not text:
-        return None
+def _to_float(x: Optional[str]) -> Optional[float]:
+    if not x: return None
     try:
-        return float(text)
+        return float(x)
     except Exception:
         return None
 
-def _extract(root: etree._Element) -> Tuple[str, str | None, str | None, str | None, float | None]:
-    # Campos comunes en múltiples tipos de comprobante
-    clave = (root.findtext(".//Clave") or "").strip()
-    consecutivo = (root.findtext(".//NumeroConsecutivo") or "").strip() or None
-
-    # Cédulas (varían por tipo/modelo)
-    ced_emisor = root.findtext(".//Emisor/Identificacion/Numero") or root.findtext(".//Emisor/NumeroIdentificacion")
-    ced_receptor = root.findtext(".//Receptor/Identificacion/Numero") or root.findtext(".//Receptor/NumeroIdentificacion")
-    ced_emisor = ced_emisor.strip() if ced_emisor else None
-    ced_receptor = ced_receptor.strip() if ced_receptor else None
-
-    # Total
-    total = root.findtext(".//ResumenFactura/TotalComprobante") or root.findtext(".//TotalFactura") or root.findtext(".//TotalComprobante")
-    return clave, consecutivo, ced_emisor, ced_receptor, _to_float_or_none(total)
-
 def validate_and_extract(xml_bytes: bytes, tenant: str, message_id: str, filename: str) -> InvoiceMeta:
-    parser = etree.XMLParser(remove_blank_text=True)
+    # 1) Validación XSD oficial (v4.4) — siempre
+    schema = invoice_schema(settings.inv_xsd_path)
     try:
-        doc = etree.fromstring(xml_bytes, parser=parser)
-    except etree.XMLSyntaxError as e:
-        raise InvoiceValidationError(f"XML mal formado: {e}") from e
+        validate_xml(xml_bytes, schema)
+    except Exception as e:
+        raise InvoiceValidationError(f"Violación XSD Factura: {e}") from e
 
-    # Si config trae XSD, valida
-    schema = _load_schema(settings.inv_xsd_path)
-    if schema:
-        try:
-            schema.assertValid(doc)
-        except etree.DocumentInvalid as e:
-            raise InvoiceValidationError(f"Violación XSD: {e}") from e
-
-    clave, consecutivo, ced_emisor, ced_receptor, total = _extract(doc)
+    # 2) Parseo/Extracción
+    root = etree.fromstring(xml_bytes)
+    clave = (root.findtext(".//Clave") or "").strip()
     if not clave:
-        raise InvoiceValidationError("Falta <Clave> en el comprobante.")
+        raise InvoiceValidationError("Falta <Clave> en factura.")
+
+    consecutivo = (root.findtext(".//NumeroConsecutivo") or "").strip() or None
+    ced_emisor = (root.findtext(".//Emisor/Identificacion/Numero")
+                  or root.findtext(".//Emisor/NumeroIdentificacion") or "")
+    ced_receptor = (root.findtext(".//Receptor/Identificacion/Numero")
+                    or root.findtext(".//Receptor/NumeroIdentificacion") or "")
+    total = (root.findtext(".//ResumenFactura/TotalComprobante")
+             or root.findtext(".//TotalComprobante") or "")
+
     return InvoiceMeta(
-        tenant=tenant,
-        message_id=message_id,
-        filename=filename,
+        tenant=tenant, message_id=message_id, filename=filename,
         clave=clave,
         consecutivo=consecutivo,
-        ced_emisor=ced_emisor,
-        ced_receptor=ced_receptor,
-        total=total,
+        ced_emisor=ced_emisor.strip() or None,
+        ced_receptor=ced_receptor.strip() or None,
+        total=_to_float(total.strip())
     )
