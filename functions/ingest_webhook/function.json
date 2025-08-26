@@ -5,19 +5,14 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"]
+      "route": "ingest",
+      "methods": [ "post" ]
     },
     {
       "type": "http",
       "direction": "out",
-      "name": "res"
-    },
-    {
-      "type": "queue",
-      "direction": "out",
-      "name": "outQueue",
-      "queueName": "%QUEUE_INCOMING%",
-      "connection": "AzureWebJobsStorage"
+      "name": "resp"
     }
-  ]
+  ],
+  "scriptFile": "__init__.py"
 }

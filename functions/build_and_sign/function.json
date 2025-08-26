@@ -1,11 +1,12 @@
 {
   "bindings": [
     {
+      "name": "msg",
       "type": "queueTrigger",
       "direction": "in",
-      "name": "msg",
       "queueName": "%QUEUE_SIGN%",
       "connection": "AzureWebJobsStorage"
     }
-  ]
+  ],
+  "scriptFile": "__init__.py"
 }
