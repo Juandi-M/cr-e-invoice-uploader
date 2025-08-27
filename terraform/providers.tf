@@ -1,13 +1,18 @@
 terraform {
-  required_version = ">= 1.5"
+  required_version = ">= 1.5.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.95"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.47"
+    }
   }
 }
 
-provider "azurerm" {
-  features {}
-}
+provider "azurerm" { features {} }
+provider "azuread" {}
+
+data "azurerm_client_config" "current" {}
